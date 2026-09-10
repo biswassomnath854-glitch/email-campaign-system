@@ -3,6 +3,7 @@ const User = require("./User");
 const Campaign = require("./Campaign");
 const Recipient = require("./Recipient");
 const CampaignRecipient = require("./CampaignRecipient");
+const EmailLog = require("./EmailLog");
 
 User.hasMany(Campaign, {
   foreignKey: "userId",
@@ -51,6 +52,28 @@ Recipient.hasMany(CampaignRecipient, {
   onDelete: "CASCADE"
 });
 
+EmailLog.belongsTo(Campaign, {
+  foreignKey: "campaignId",
+  as: "campaign"
+});
+
+EmailLog.belongsTo(Recipient, {
+  foreignKey: "recipientId",
+  as: "recipient"
+});
+
+Campaign.hasMany(EmailLog, {
+  foreignKey: "campaignId",
+  as: "emailLogs",
+  onDelete: "CASCADE"
+});
+
+Recipient.hasMany(EmailLog, {
+  foreignKey: "recipientId",
+  as: "emailLogs",
+  onDelete: "CASCADE"
+});
+
 const db = {};
 
 db.sequelize = sequelize;
@@ -58,5 +81,6 @@ db.User = User;
 db.Campaign = Campaign;
 db.Recipient = Recipient;
 db.CampaignRecipient = CampaignRecipient;
+db.EmailLog = EmailLog;
 
 module.exports = db;
