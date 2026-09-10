@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const env = require("./config/env");
+const { connectDatabase } = require("./config/database");
 
 const app = express();
 
@@ -16,6 +17,14 @@ app.get(`${env.apiPrefix}/health`, (req, res) => {
   });
 });
 
-app.listen(env.port, () => {
-  console.log(`${env.appName} server running at http://localhost:${env.port}`);
-});
+const startServer = async () => {
+  await connectDatabase();
+
+  app.listen(env.port, () => {
+    console.log(
+      `${env.appName} server running at http://localhost:${env.port}`
+    );
+  });
+};
+
+startServer();
