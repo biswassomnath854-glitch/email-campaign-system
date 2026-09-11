@@ -1,4 +1,8 @@
-const { Campaign, Recipient, CampaignRecipient } = require("../models");
+const {
+  Campaign,
+  Recipient,
+  CampaignRecipient
+} = require("../models");
 
 const createCampaign = async (req, res, next) => {
   try {
@@ -351,6 +355,98 @@ const removeRecipientFromCampaign = async (req, res, next) => {
   }
 };
 
+const updateCampaignRecipientStatus = async (req, res, next) => {
+  try {
+    const { campaignId, recipientId } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      "pending",
+      "queued",
+      "sent",
+      "failed"
+    ];
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required"
+      });
+    }
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid status. Allowed values are pending, queued, sent and failed"
+      });
+    }
+
+    const campaign = await Campaign.findOne({
+      where: {
+        id: campaignId,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    const campaignRecipient = await CampaignRecipient.findOne({
+      where: {
+        campaignId: campaign.id,
+        recipientId
+      },
+      include: [
+        {
+          model: Recipient,
+          as: "recipient",
+          attributes: [
+            "id",
+            "name",
+            "email",
+            "isSubscribed",
+            "isActive"
+          ]
+        }
+      ]
+    });
+
+    if (!campaignRecipient) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipient is not assigned to this campaign"
+      });
+    }
+
+    const updateData = {
+      status
+    };
+
+    if (status === "sent") {
+      updateData.sentAt = new Date();
+    } else if (status !== "sent") {
+      updateData.sentAt = null;
+    }
+
+    await campaignRecipient.update(updateData);
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaign recipient status updated successfully",
+      data: {
+        campaignRecipient
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -359,5 +455,6 @@ module.exports = {
   deleteCampaign,
   addRecipientToCampaign,
   getCampaignRecipients,
-  removeRecipientFromCampaign
+  removeRecipientFromCampaign,
+  updateCampaignRecipientStatus
 };

@@ -12,7 +12,8 @@ const {
   deleteCampaign,
   addRecipientToCampaign,
   getCampaignRecipients,
-  removeRecipientFromCampaign
+  removeRecipientFromCampaign,
+  updateCampaignRecipientStatus
 } = require("../controllers/campaignController");
 
 const router = express.Router();
@@ -37,6 +38,12 @@ router.get(
   "/:campaignId/recipients",
   authenticate,
   getCampaignRecipients
+);
+
+router.patch(
+  "/:campaignId/recipients/:recipientId/status",
+  authenticate,
+  updateCampaignRecipientStatus
 );
 
 router.delete(
