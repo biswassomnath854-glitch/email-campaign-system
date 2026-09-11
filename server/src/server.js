@@ -6,6 +6,7 @@ const { connectDatabase } = require("./config/database");
 
 const authRoutes = require("./routes/authRoutes");
 const testRoutes = require("./routes/testRoutes");
+const campaignRoutes = require("./routes/campaignRoutes");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use(`${env.apiPrefix}/auth`, authRoutes);
 app.use(`${env.apiPrefix}/test`, testRoutes);
+app.use(`${env.apiPrefix}/campaigns`, campaignRoutes);
 
 app.get(`${env.apiPrefix}/health`, (req, res) => {
   res.status(200).json({
