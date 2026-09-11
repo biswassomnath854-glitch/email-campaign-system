@@ -8,7 +8,8 @@ const {
   createRecipient,
   getRecipients,
   getRecipientById,
-  updateRecipient
+  updateRecipient,
+  deleteRecipient
 } = require("../controllers/recipientController");
 
 const router = express.Router();
@@ -20,5 +21,7 @@ router.get("/", authenticate, getRecipients);
 router.get("/:id", authenticate, getRecipientById);
 
 router.put("/:id", authenticate, updateRecipient);
+
+router.delete("/:id", authenticate, deleteRecipient);
 
 module.exports = router;

@@ -164,9 +164,41 @@ const updateRecipient = async (req, res, next) => {
   }
 };
 
+const deleteRecipient = async (req, res, next) => {
+  try {
+    const recipient = await Recipient.findByPk(req.params.id);
+
+    if (!recipient) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipient not found"
+      });
+    }
+
+    if (!recipient.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "Recipient is already inactive"
+      });
+    }
+
+    await recipient.update({
+      isActive: false
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Recipient deleted successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRecipient,
   getRecipients,
   getRecipientById,
-  updateRecipient
+  updateRecipient,
+  deleteRecipient
 };
