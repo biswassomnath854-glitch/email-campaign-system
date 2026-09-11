@@ -301,6 +301,56 @@ const getCampaignRecipients = async (req, res, next) => {
   }
 };
 
+const removeRecipientFromCampaign = async (req, res, next) => {
+  try {
+    const { campaignId, recipientId } = req.params;
+
+    const campaign = await Campaign.findOne({
+      where: {
+        id: campaignId,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    if (campaign.status !== "draft") {
+      return res.status(400).json({
+        success: false,
+        message: "Only draft campaigns can remove recipients"
+      });
+    }
+
+    const campaignRecipient = await CampaignRecipient.findOne({
+      where: {
+        campaignId: campaign.id,
+        recipientId
+      }
+    });
+
+    if (!campaignRecipient) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipient is not assigned to this campaign"
+      });
+    }
+
+    await campaignRecipient.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: "Recipient removed from campaign successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -308,5 +358,6 @@ module.exports = {
   updateCampaign,
   deleteCampaign,
   addRecipientToCampaign,
-  getCampaignRecipients
+  getCampaignRecipients,
+  removeRecipientFromCampaign
 };

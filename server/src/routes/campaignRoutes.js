@@ -11,7 +11,8 @@ const {
   updateCampaign,
   deleteCampaign,
   addRecipientToCampaign,
-  getCampaignRecipients
+  getCampaignRecipients,
+  removeRecipientFromCampaign
 } = require("../controllers/campaignController");
 
 const router = express.Router();
@@ -36,6 +37,12 @@ router.get(
   "/:campaignId/recipients",
   authenticate,
   getCampaignRecipients
+);
+
+router.delete(
+  "/:campaignId/recipients/:recipientId",
+  authenticate,
+  removeRecipientFromCampaign
 );
 
 module.exports = router;
