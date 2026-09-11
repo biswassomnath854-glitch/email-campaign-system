@@ -2,8 +2,18 @@ require("dotenv").config();
 
 const { Worker } = require("bullmq");
 
-const { sendEmail } = require("../services/emailService");
-const { EmailLog } = require("../models");
+const {
+  sendEmail
+} = require("../services/emailService");
+
+const {
+  EmailLog,
+  CampaignRecipient
+} = require("../models");
+
+const {
+  completeCampaign
+} = require("../services/campaignCompletionService");
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
@@ -67,6 +77,36 @@ const emailWorker = new Worker(
         });
       }
 
+      if (campaignId && recipientId) {
+        await CampaignRecipient.update(
+          {
+            status: "sent",
+            sentAt: new Date()
+          },
+          {
+            where: {
+              campaignId,
+              recipientId
+            }
+          }
+        );
+
+        try {
+          const completionResult =
+            await completeCampaign(campaignId);
+
+          console.log(
+            "Campaign completion check:",
+            completionResult
+          );
+        } catch (completionError) {
+          console.error(
+            "Campaign completion check failed"
+          );
+          console.error(completionError.message);
+        }
+      }
+
       return {
         success: true,
         message: "Email sent successfully",
@@ -82,6 +122,36 @@ const emailWorker = new Worker(
           status: "failed",
           errorMessage: error.message
         });
+      }
+
+      if (campaignId && recipientId) {
+        await CampaignRecipient.update(
+          {
+            status: "failed",
+            sentAt: null
+          },
+          {
+            where: {
+              campaignId,
+              recipientId
+            }
+          }
+        );
+
+        try {
+          const completionResult =
+            await completeCampaign(campaignId);
+
+          console.log(
+            "Campaign completion check after failure:",
+            completionResult
+          );
+        } catch (completionError) {
+          console.error(
+            "Campaign completion check failed"
+          );
+          console.error(completionError.message);
+        }
       }
 
       throw error;

@@ -9,6 +9,10 @@ const testRoutes = require("./routes/testRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const recipientRoutes = require("./routes/recipientRoutes");
 
+const {
+  startCampaignScheduler
+} = require("./jobs/campaignSchedulerJob");
+
 const app = express();
 
 app.use(cors());
@@ -34,6 +38,8 @@ const startServer = async () => {
     console.log(
       `${env.appName} server running at http://localhost:${env.port}`
     );
+
+    startCampaignScheduler();
   });
 };
 
