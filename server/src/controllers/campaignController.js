@@ -130,9 +130,44 @@ const updateCampaign = async (req, res, next) => {
   }
 };
 
+const deleteCampaign = async (req, res, next) => {
+  try {
+    const campaign = await Campaign.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    if (campaign.status !== "draft") {
+      return res.status(400).json({
+        success: false,
+        message: "Only draft campaigns can be deleted"
+      });
+    }
+
+    await campaign.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaign deleted successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
   getCampaignById,
-  updateCampaign
+  updateCampaign,
+  deleteCampaign
 };

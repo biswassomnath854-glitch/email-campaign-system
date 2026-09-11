@@ -8,7 +8,8 @@ const {
   createCampaign,
   getCampaigns,
   getCampaignById,
-  updateCampaign
+  updateCampaign,
+  deleteCampaign
 } = require("../controllers/campaignController");
 
 const router = express.Router();
@@ -20,5 +21,7 @@ router.get("/", authenticate, getCampaigns);
 router.get("/:id", authenticate, getCampaignById);
 
 router.put("/:id", authenticate, updateCampaign);
+
+router.delete("/:id", authenticate, deleteCampaign);
 
 module.exports = router;
