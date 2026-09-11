@@ -1,0 +1,11 @@
+{
+  "name": "email-campaign-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n BACKEND,FRONTEND,WORKER \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"npm run worker --prefix server\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
