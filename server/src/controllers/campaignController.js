@@ -429,7 +429,7 @@ const updateCampaignRecipientStatus = async (req, res, next) => {
 
     if (status === "sent") {
       updateData.sentAt = new Date();
-    } else if (status !== "sent") {
+    } else {
       updateData.sentAt = null;
     }
 
@@ -447,6 +447,124 @@ const updateCampaignRecipientStatus = async (req, res, next) => {
   }
 };
 
+const scheduleCampaign = async (req, res, next) => {
+  try {
+    const { scheduledAt } = req.body;
+
+    if (!scheduledAt) {
+      return res.status(400).json({
+        success: false,
+        message: "Scheduled date and time are required"
+      });
+    }
+
+    const scheduledDate = new Date(scheduledAt);
+
+    if (Number.isNaN(scheduledDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid scheduled date and time"
+      });
+    }
+
+    if (scheduledDate <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Scheduled time must be in the future"
+      });
+    }
+
+    const campaign = await Campaign.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    if (campaign.status !== "draft") {
+      return res.status(400).json({
+        success: false,
+        message: "Only draft campaigns can be scheduled"
+      });
+    }
+
+    const recipientCount = await CampaignRecipient.count({
+      where: {
+        campaignId: campaign.id
+      }
+    });
+
+    if (recipientCount === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Campaign must have at least one recipient"
+      });
+    }
+
+    await campaign.update({
+      status: "scheduled",
+      scheduledAt: scheduledDate
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaign scheduled successfully",
+      data: {
+        campaign
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const cancelScheduledCampaign = async (req, res, next) => {
+  try {
+    const campaign = await Campaign.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    if (campaign.status !== "scheduled") {
+      return res.status(400).json({
+        success: false,
+        message: "Only scheduled campaigns can be cancelled"
+      });
+    }
+
+    await campaign.update({
+      status: "draft",
+      scheduledAt: null
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaign cancelled successfully",
+      data: {
+        campaign
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
@@ -456,5 +574,7 @@ module.exports = {
   addRecipientToCampaign,
   getCampaignRecipients,
   removeRecipientFromCampaign,
-  updateCampaignRecipientStatus
+  updateCampaignRecipientStatus,
+  scheduleCampaign,
+  cancelScheduledCampaign
 };

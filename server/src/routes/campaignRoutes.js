@@ -13,7 +13,9 @@ const {
   addRecipientToCampaign,
   getCampaignRecipients,
   removeRecipientFromCampaign,
-  updateCampaignRecipientStatus
+  updateCampaignRecipientStatus,
+  scheduleCampaign,
+  cancelScheduledCampaign
 } = require("../controllers/campaignController");
 
 const router = express.Router();
@@ -50,6 +52,18 @@ router.delete(
   "/:campaignId/recipients/:recipientId",
   authenticate,
   removeRecipientFromCampaign
+);
+
+router.patch(
+  "/:id/schedule",
+  authenticate,
+  scheduleCampaign
+);
+
+router.patch(
+  "/:id/cancel",
+  authenticate,
+  cancelScheduledCampaign
 );
 
 module.exports = router;
