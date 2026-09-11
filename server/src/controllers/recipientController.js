@@ -66,7 +66,36 @@ const getRecipients = async (req, res, next) => {
   }
 };
 
+const getRecipientById = async (req, res, next) => {
+  try {
+    const recipient = await Recipient.findOne({
+      where: {
+        id: req.params.id,
+        isActive: true
+      }
+    });
+
+    if (!recipient) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipient not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Recipient retrieved successfully",
+      data: {
+        recipient
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRecipient,
-  getRecipients
+  getRecipients,
+  getRecipientById
 };

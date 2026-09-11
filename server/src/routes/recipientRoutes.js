@@ -6,7 +6,8 @@ const {
 
 const {
   createRecipient,
-  getRecipients
+  getRecipients,
+  getRecipientById
 } = require("../controllers/recipientController");
 
 const router = express.Router();
@@ -14,5 +15,7 @@ const router = express.Router();
 router.post("/", authenticate, createRecipient);
 
 router.get("/", authenticate, getRecipients);
+
+router.get("/:id", authenticate, getRecipientById);
 
 module.exports = router;
