@@ -45,6 +45,28 @@ const createRecipient = async (req, res, next) => {
   }
 };
 
+const getRecipients = async (req, res, next) => {
+  try {
+    const recipients = await Recipient.findAll({
+      where: {
+        isActive: true
+      },
+      order: [["createdAt", "DESC"]]
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Recipients retrieved successfully",
+      data: {
+        recipients
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  createRecipient
+  createRecipient,
+  getRecipients
 };

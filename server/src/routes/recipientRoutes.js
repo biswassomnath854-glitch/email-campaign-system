@@ -5,11 +5,14 @@ const {
 } = require("../middleware/authMiddleware");
 
 const {
-  createRecipient
+  createRecipient,
+  getRecipients
 } = require("../controllers/recipientController");
 
 const router = express.Router();
 
 router.post("/", authenticate, createRecipient);
+
+router.get("/", authenticate, getRecipients);
 
 module.exports = router;
