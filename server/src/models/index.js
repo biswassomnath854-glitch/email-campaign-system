@@ -1,9 +1,11 @@
 const { sequelize } = require("../config/database");
+
 const User = require("./User");
 const Campaign = require("./Campaign");
 const Recipient = require("./Recipient");
 const CampaignRecipient = require("./CampaignRecipient");
 const EmailLog = require("./EmailLog");
+const RefreshToken = require("./RefreshToken");
 
 User.hasMany(Campaign, {
   foreignKey: "userId",
@@ -74,6 +76,17 @@ Recipient.hasMany(EmailLog, {
   onDelete: "CASCADE"
 });
 
+User.hasMany(RefreshToken, {
+  foreignKey: "userId",
+  as: "refreshTokens",
+  onDelete: "CASCADE"
+});
+
+RefreshToken.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user"
+});
+
 const db = {};
 
 db.sequelize = sequelize;
@@ -82,5 +95,6 @@ db.Campaign = Campaign;
 db.Recipient = Recipient;
 db.CampaignRecipient = CampaignRecipient;
 db.EmailLog = EmailLog;
+db.RefreshToken = RefreshToken;
 
 module.exports = db;

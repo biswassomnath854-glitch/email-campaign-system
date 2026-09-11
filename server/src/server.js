@@ -4,10 +4,16 @@ const cors = require("cors");
 const env = require("./config/env");
 const { connectDatabase } = require("./config/database");
 
+const authRoutes = require("./routes/authRoutes");
+const testRoutes = require("./routes/testRoutes");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use(`${env.apiPrefix}/auth`, authRoutes);
+app.use(`${env.apiPrefix}/test`, testRoutes);
 
 app.get(`${env.apiPrefix}/health`, (req, res) => {
   res.status(200).json({
