@@ -1,71 +1,16 @@
-import api from "./api";
+import campaignApi from "../api/campaignApi";
 
-const getCampaigns = async () => {
-  const response = await api.get(
-    "/campaigns"
-  );
-
-  return response.data;
-};
-
-const getCampaign = async (campaignId) => {
-  const response = await api.get(
-    `/campaigns/${campaignId}`
-  );
-
-  return response.data;
-};
-
-const createCampaign = async (campaignData) => {
-  const response = await api.post(
-    "/campaigns",
-    campaignData
-  );
-
-  return response.data;
-};
-
-const updateCampaign = async (
-  campaignId,
-  campaignData
-) => {
-  const response = await api.put(
-    `/campaigns/${campaignId}`,
-    campaignData
-  );
-
-  return response.data;
-};
-
-const deleteCampaign = async (campaignId) => {
-  const response = await api.delete(
-    `/campaigns/${campaignId}`
-  );
-
-  return response.data;
-};
-
-const scheduleCampaign = async (
-  campaignId,
-  scheduledAt
-) => {
-  const response = await api.patch(
-    `/campaigns/${campaignId}/schedule`,
-    {
-      scheduledAt
-    }
-  );
-
-  return response.data;
-};
-
-const cancelCampaign = async (campaignId) => {
-  const response = await api.patch(
-    `/campaigns/${campaignId}/cancel`
-  );
-
-  return response.data;
-};
+const getCampaigns = async () => campaignApi.getCampaigns();
+const getCampaign = async (campaignId) => campaignApi.getCampaignById(campaignId);
+const createCampaign = async (campaignData) => campaignApi.createCampaign(campaignData);
+const updateCampaign = async (campaignId, campaignData) => campaignApi.updateCampaign(campaignId, campaignData);
+const deleteCampaign = async (campaignId) => campaignApi.deleteCampaign(campaignId);
+const scheduleCampaign = async (campaignId, scheduledAt) => campaignApi.scheduleCampaign(campaignId, scheduledAt);
+const cancelCampaign = async (campaignId) => campaignApi.cancelCampaign(campaignId);
+const getCampaignRecipients = async (campaignId) => campaignApi.getCampaignRecipients(campaignId);
+const addRecipientToCampaign = async (campaignId, recipientId) => campaignApi.addRecipientToCampaign(campaignId, recipientId);
+const removeRecipientFromCampaign = async (campaignId, recipientId) => campaignApi.removeRecipientFromCampaign(campaignId, recipientId);
+const updateCampaignRecipientStatus = async (campaignId, recipientId, status) => campaignApi.updateRecipientStatus(campaignId, recipientId, status);
 
 const campaignService = {
   getCampaigns,
@@ -74,7 +19,11 @@ const campaignService = {
   updateCampaign,
   deleteCampaign,
   scheduleCampaign,
-  cancelCampaign
+  cancelCampaign,
+  getCampaignRecipients,
+  addRecipientToCampaign,
+  removeRecipientFromCampaign,
+  updateCampaignRecipientStatus
 };
 
 export default campaignService;

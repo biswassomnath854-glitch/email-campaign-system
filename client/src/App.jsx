@@ -8,11 +8,13 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AppLayout from "./layouts/AppLayout";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Campaigns from "./pages/Campaigns";
+import CampaignDetails from "./pages/CampaignDetails";
 import Recipients from "./pages/Recipients";
 import Unauthorized from "./pages/Unauthorized";
 
@@ -21,65 +23,28 @@ const App = () => {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route
-            path="/login"
-            element={<Login />}
-          />
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
-          <Route
-            path="/unauthorized"
-            element={<Unauthorized />}
-          />
-
+          {/* Authenticated routes wrapped with AppLayout */}
           <Route element={<ProtectedRoute />}>
-            <Route
-              path="/dashboard"
-              element={<Dashboard />}
-            />
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/campaigns/:id" element={<CampaignDetails />} />
+              <Route path="/recipients" element={<Recipients />} />
 
-            <Route
-              path="/campaigns"
-              element={<Campaigns />}
-            />
-
-            <Route
-              path="/recipients"
-              element={<Recipients />}
-            />
+              {/* Admin-only route inside the same AppLayout */}
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
+            </Route>
           </Route>
 
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={["admin"]}
-              />
-            }
-          >
-            <Route
-              path="/admin"
-              element={<AdminDashboard />}
-            />
-          </Route>
-
-          <Route
-            path="/"
-            element={
-              <Navigate
-                to="/dashboard"
-                replace
-              />
-            }
-          />
-
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/dashboard"
-                replace
-              />
-            }
-          />
+          {/* Root and Catch-all redirects */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
