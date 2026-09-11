@@ -1,4 +1,8 @@
+require("dotenv").config();
+
 const { Worker } = require("bullmq");
+
+const { sendEmail } = require("../services/emailService");
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
@@ -12,9 +16,34 @@ const emailWorker = new Worker(
     console.log("Job name:", job.name);
     console.log("Job data:", job.data);
 
+    const { to, subject, text, html } = job.data;
+
+    if (!to) {
+      throw new Error("Recipient email address is required");
+    }
+
+    if (!subject) {
+      throw new Error("Email subject is required");
+    }
+
+    if (!text && !html) {
+      throw new Error("Email content is required");
+    }
+
+    const info = await sendEmail({
+      to,
+      subject,
+      text,
+      html
+    });
+
+    console.log("Email sent successfully");
+    console.log("Message ID:", info.messageId);
+
     return {
       success: true,
-      message: "Email job processed successfully"
+      message: "Email sent successfully",
+      messageId: info.messageId
     };
   },
   {
@@ -22,8 +51,9 @@ const emailWorker = new Worker(
   }
 );
 
-emailWorker.on("completed", (job) => {
+emailWorker.on("completed", (job, result) => {
   console.log("Email job completed:", job.id);
+  console.log("Worker result:", result);
 });
 
 emailWorker.on("failed", (job, error) => {
