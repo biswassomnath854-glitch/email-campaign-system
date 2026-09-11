@@ -10,7 +10,8 @@ const {
   getCampaignById,
   updateCampaign,
   deleteCampaign,
-  addRecipientToCampaign
+  addRecipientToCampaign,
+  getCampaignRecipients
 } = require("../controllers/campaignController");
 
 const router = express.Router();
@@ -29,6 +30,12 @@ router.post(
   "/:campaignId/recipients",
   authenticate,
   addRecipientToCampaign
+);
+
+router.get(
+  "/:campaignId/recipients",
+  authenticate,
+  getCampaignRecipients
 );
 
 module.exports = router;

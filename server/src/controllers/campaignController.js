@@ -251,11 +251,62 @@ const addRecipientToCampaign = async (req, res, next) => {
   }
 };
 
+const getCampaignRecipients = async (req, res, next) => {
+  try {
+    const { campaignId } = req.params;
+
+    const campaign = await Campaign.findOne({
+      where: {
+        id: campaignId,
+        userId: req.user.userId
+      }
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaign not found"
+      });
+    }
+
+    const campaignRecipients = await CampaignRecipient.findAll({
+      where: {
+        campaignId: campaign.id
+      },
+      include: [
+        {
+          model: Recipient,
+          as: "recipient",
+          attributes: [
+            "id",
+            "name",
+            "email",
+            "isSubscribed",
+            "isActive"
+          ]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaign recipients retrieved successfully",
+      data: {
+        campaignRecipients
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCampaign,
   getCampaigns,
   getCampaignById,
   updateCampaign,
   deleteCampaign,
-  addRecipientToCampaign
+  addRecipientToCampaign,
+  getCampaignRecipients
 };
