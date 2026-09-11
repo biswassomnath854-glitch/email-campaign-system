@@ -31,6 +31,28 @@ const createCampaign = async (req, res, next) => {
   }
 };
 
+const getCampaigns = async (req, res, next) => {
+  try {
+    const campaigns = await Campaign.findAll({
+      where: {
+        userId: req.user.userId
+      },
+      order: [["createdAt", "DESC"]]
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Campaigns retrieved successfully",
+      data: {
+        campaigns
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  createCampaign
+  createCampaign,
+  getCampaigns
 };
