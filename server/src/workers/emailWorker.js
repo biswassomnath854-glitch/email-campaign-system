@@ -3,6 +3,7 @@ require("dotenv").config();
 const { Worker } = require("bullmq");
 
 const { sendEmail } = require("../services/emailService");
+const { EmailLog } = require("../models");
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
@@ -16,7 +17,14 @@ const emailWorker = new Worker(
     console.log("Job name:", job.name);
     console.log("Job data:", job.data);
 
-    const { to, subject, text, html } = job.data;
+    const {
+      to,
+      subject,
+      text,
+      html,
+      campaignId,
+      recipientId
+    } = job.data;
 
     if (!to) {
       throw new Error("Recipient email address is required");
@@ -30,21 +38,54 @@ const emailWorker = new Worker(
       throw new Error("Email content is required");
     }
 
-    const info = await sendEmail({
-      to,
-      subject,
-      text,
-      html
-    });
+    let emailLog = null;
 
-    console.log("Email sent successfully");
-    console.log("Message ID:", info.messageId);
+    try {
+      if (campaignId && recipientId) {
+        emailLog = await EmailLog.create({
+          campaignId,
+          recipientId,
+          status: "queued"
+        });
+      }
 
-    return {
-      success: true,
-      message: "Email sent successfully",
-      messageId: info.messageId
-    };
+      const info = await sendEmail({
+        to,
+        subject,
+        text,
+        html
+      });
+
+      console.log("Email sent successfully");
+      console.log("Message ID:", info.messageId);
+
+      if (emailLog) {
+        await emailLog.update({
+          status: "sent",
+          messageId: info.messageId,
+          sentAt: new Date()
+        });
+      }
+
+      return {
+        success: true,
+        message: "Email sent successfully",
+        messageId: info.messageId,
+        emailLogId: emailLog ? emailLog.id : null
+      };
+    } catch (error) {
+      console.error("Email sending failed");
+      console.error(error.message);
+
+      if (emailLog) {
+        await emailLog.update({
+          status: "failed",
+          errorMessage: error.message
+        });
+      }
+
+      throw error;
+    }
   },
   {
     connection: redisConnection
